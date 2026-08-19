@@ -1,0 +1,55 @@
+name: Render Después del error audio
+
+on:
+  push:
+    branches:
+      - render-despues-del-error
+    paths:
+      - "render_despues_del_error.py"
+      - ".github/workflows/render-despues-del-error.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "render_despues_del_error.py"
+      - ".github/workflows/render-despues-del-error.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install audio dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          python -m pip install --upgrade pip
+          python -m pip install edge-tts pydub
+
+      - name: Render voice and pauses
+        run: python render_despues_del_error.py
+
+      - name: Upload finished audio
+        uses: actions/upload-artifact@v4
+        with:
+          name: despues-del-error-audio
+          path: |
+            output_despues_error/Despues_del_error_volver_a_la_accion_relevante.mp3
+            output_despues_error/Despues_del_error_voz_limpia.wav
+            output_despues_error/render_metadata.json
+          if-no-files-found: error
+          retention-days: 7
