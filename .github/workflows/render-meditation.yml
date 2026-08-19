@@ -6,6 +6,10 @@ on:
     paths:
       - "render_meditation.py"
       - ".github/workflows/render-meditation.yml"
+  pull_request:
+    paths:
+      - "render_meditation.py"
+      - ".github/workflows/render-meditation.yml"
 
 permissions:
   contents: write
@@ -46,6 +50,7 @@ jobs:
           retention-days: 7
 
       - name: Commit rendered files
+        if: github.event_name != 'pull_request'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
