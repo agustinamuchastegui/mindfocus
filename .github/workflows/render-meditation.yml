@@ -1,0 +1,59 @@
+name: Render meditation audio
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "render_meditation.py"
+      - ".github/workflows/render-meditation.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install audio dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          python -m pip install --upgrade pip
+          python -m pip install edge-tts pydub
+
+      - name: Render voice and pauses
+        run: python render_meditation.py
+
+      - name: Upload finished audio
+        uses: actions/upload-artifact@v4
+        with:
+          name: volver-a-la-respiracion-audio
+          path: |
+            output/Volver_a_la_respiracion_Elena.mp3
+            output/Volver_a_la_respiracion_Elena_voz_limpia.wav
+            output/render_metadata.json
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Commit rendered files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add output/
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Render meditation audio"
+            git push
+          fi
