@@ -61,3 +61,5 @@ jobs:
             git commit -m "Render meditation audio"
             git push
           fi
+
+# Preview render trigger
