@@ -1,0 +1,54 @@
+name: Render Hacer lugar a la presión audio
+
+on:
+  push:
+    branches:
+      - render-hacer-lugar-presion
+    paths:
+      - "render_hacer_lugar_presion.py"
+      - ".github/workflows/render-hacer-lugar-presion.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "render_hacer_lugar_presion.py"
+      - ".github/workflows/render-hacer-lugar-presion.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install audio dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          python -m pip install --upgrade pip
+          python -m pip install edge-tts pydub
+
+      - name: Render voice and pauses
+        run: python render_hacer_lugar_presion.py
+
+      - name: Upload finished audio
+        uses: actions/upload-artifact@v4
+        with:
+          name: hacer-lugar-a-la-presion-audio
+          path: |
+            output_hacer_lugar_presion/Hacer_lugar_a_la_presion_actuar_sin_esperar_que_desaparezca.mp3
+            output_hacer_lugar_presion/Hacer_lugar_a_la_presion_voz_limpia.wav
+            output_hacer_lugar_presion/render_metadata.json
+          if-no-files-found: error
+          retention-days: 7
