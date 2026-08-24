@@ -1,0 +1,54 @@
+name: Render Escaneo corporal audio
+
+on:
+  push:
+    branches:
+      - render-escaneo-corporal
+    paths:
+      - "render_escaneo_corporal.py"
+      - ".github/workflows/render-escaneo-corporal.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "render_escaneo_corporal.py"
+      - ".github/workflows/render-escaneo-corporal.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install audio dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          python -m pip install --upgrade pip
+          python -m pip install edge-tts pydub
+
+      - name: Render voice and pauses
+        run: python render_escaneo_corporal.py
+
+      - name: Upload finished audio
+        uses: actions/upload-artifact@v4
+        with:
+          name: escaneo-corporal-audio
+          path: |
+            output_escaneo_corporal/Escaneo_corporal_reconocer_las_senales_del_cuerpo.mp3
+            output_escaneo_corporal/Escaneo_corporal_voz_limpia.wav
+            output_escaneo_corporal/render_metadata.json
+          if-no-files-found: error
+          retention-days: 7
