@@ -1,0 +1,54 @@
+name: Render Cerrar el día audio
+
+on:
+  push:
+    branches:
+      - render-cerrar-el-dia
+    paths:
+      - "render_cerrar_el_dia.py"
+      - ".github/workflows/render-cerrar-el-dia.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "render_cerrar_el_dia.py"
+      - ".github/workflows/render-cerrar-el-dia.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install audio dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          python -m pip install --upgrade pip
+          python -m pip install edge-tts pydub
+
+      - name: Render voice and pauses
+        run: python render_cerrar_el_dia.py
+
+      - name: Upload finished audio
+        uses: actions/upload-artifact@v4
+        with:
+          name: cerrar-el-dia-audio
+          path: |
+            output_cerrar_dia/Cerrar_el_dia_dejar_de_responder_por_hoy.mp3
+            output_cerrar_dia/Cerrar_el_dia_voz_limpia.wav
+            output_cerrar_dia/render_metadata.json
+          if-no-files-found: error
+          retention-days: 7
